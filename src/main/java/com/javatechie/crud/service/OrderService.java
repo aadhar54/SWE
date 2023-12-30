@@ -3,6 +3,7 @@ package com.javatechie.crud.service;
 import com.javatechie.crud.entity.Order;
 import com.javatechie.crud.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
