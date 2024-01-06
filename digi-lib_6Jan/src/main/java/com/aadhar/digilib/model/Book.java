@@ -62,6 +62,7 @@ public class Book {
     // if we want to load it only when it is explicitly asked for we can use Fetch Type as LAZY
     // By default its Fetch Type as LAZY . So to demonstrate that how to load it on every request related to Book table then we can tell
     // hibernate to load it EAGERLY. using FetchType.EAGER in the above annotation.
+    @JsonIgnoreProperties({"book"})
     private List<Transaction> transactionList;
 
     //and with this our entity classes for Book and Student are completed. Now I will move on to Genre Enum and show how we can assign values to ENum

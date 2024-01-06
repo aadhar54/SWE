@@ -69,7 +69,7 @@ public class Transaction {
     @JoinColumn
     @ManyToOne
     @JsonIgnoreProperties("{transactionList}")
-    private Book my_book;
+    private Book book;
 
     // now next ou r transaction table should also have the FKEY of our Student table
 
@@ -77,7 +77,7 @@ public class Transaction {
     @ManyToOne
     @JsonIgnoreProperties({"transactionList"}) // this means we want to ignore the transactionList from the response of my_student during any
     //request
-    private Student my_student;
+    private Student student;
 
     // now what else we should also have a fine rigth ??
     // fine can be like 10 Rs 50 paise so lets have it as a double
