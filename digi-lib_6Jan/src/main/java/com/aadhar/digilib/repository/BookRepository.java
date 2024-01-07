@@ -28,6 +28,6 @@ public interface BookRepository extends JpaRepository<Book, Integer> {
 
     @Modifying
     @Transactional
-    @Query("update Book b set b.my_student = null where b.id = ?1 ")
+    @Query("update Book b set b.my_student = null where b.id = ?1")
     void unassignBook(int bookId);
 }
