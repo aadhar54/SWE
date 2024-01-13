@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class TransactionService {
@@ -108,5 +109,84 @@ public class TransactionService {
            return transactionRepository.save(transaction).getExternalId();
        }
 
+    }
+
+    public String returnTxn(int bookId, int studentId) throws Exception {
+        Book book;
+
+        try{
+            book = bookService.search(
+                    SearchBookRequest.builder()
+                            .searchKey("id")
+                            .searchValue(String.valueOf(bookId))
+                            .operator("=")
+                            .build()
+            ).get(0);
+        }
+        catch(Exception e){
+            throw new Exception("not able to fetch the book using book id");
+        }
+
+        // Validation
+        if(book.getMy_student() != null && book.getMy_student().getId() != studentId){
+            throw new Exception("Book is not assigned to this student");
+        }
+
+        Student student = studentService.get(studentId);
+
+        Transaction transaction = Transaction.builder()
+                .externalId(UUID.randomUUID().toString())
+                .transactionType(TransactionType.RETURN)
+                .student(student)
+                .book(book)
+                .transactionStatus(TransactionStatus.PENDING)
+                .build();
+
+        transaction = transactionRepository.save(transaction); // the transaction object returned from .save() is coming from db
+
+
+        // Fine Calculation
+        Transaction lastIssueTransaction = transactionRepository.findTopByStudentAndBookAndTransactionTypeAndTransactionStatusOrderByTransactionTimeDesc(student,book,
+                TransactionType.ISSUE, TransactionStatus.SUCCESS);
+
+        long issueTxnInMillis = lastIssueTransaction.getTransactionTime().getTime();
+
+        long currentTimeInMillis = System.currentTimeMillis();
+
+        long timeDifferenceInMillis = currentTimeInMillis - issueTxnInMillis;
+
+        // task is to convert this time difference from millis to days
+        // because for each day we are charging Rs 10
+
+        long timeDifferenceInDays = TimeUnit.DAYS.convert(timeDifferenceInMillis, TimeUnit.MILLISECONDS);
+
+        Double fine = 0.0;
+        if(timeDifferenceInDays > numberOfDaysForIssuance){
+            long daysEligibleForFine = timeDifferenceInDays - numberOfDaysForIssuance;
+            fine = daysEligibleForFine * 10.0;
+        }
+
+        // add the fine to the transaction and from these we add it to next semeester fees of this student
+        transaction.setFine(fine);
+
+
+        try {
+            // finally return the book and remove the student id from the book
+            book.setMy_student(null);
+            bookService.unassignBookFromStudent(book);
+
+            // we are sure that we can mark this transaction as success in the table
+            transaction.setTransactionStatus(TransactionStatus.SUCCESS);
+            return transaction.getExternalId();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            transaction.setTransactionStatus(TransactionStatus.FAILED);
+        }
+        finally {
+            // update the transaction row in transaction table
+            transactionRepository.save(transaction);
+            return transaction.getExternalId();
+        }
     }
 }
