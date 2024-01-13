@@ -19,6 +19,13 @@ import java.util.List;
 @Builder // for creating the java object of Book class using Builder pattern
 public class Book {
 
+    /*
+    IDENTITY -> DB will auto increment
+    UUID -> string
+    SEQUENCE -> oracle db
+    TABLE -> not used because not thread safe operation
+    AUTO -> auto increment is managed by hibernate.
+     */
     @Id // tells hibernate that this is our primary key of Book table
     @GeneratedValue(strategy = GenerationType.IDENTITY) // for telling MySQL db to auto increment id everytime a new Book row is created in Book table
     private int id;

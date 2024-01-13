@@ -9,7 +9,6 @@ import java.util.*;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 public class SearchBookRequest {
 
     @NotBlank
